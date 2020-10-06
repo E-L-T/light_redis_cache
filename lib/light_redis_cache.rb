@@ -9,8 +9,26 @@ module LightRedisCache
 
     def initialize hostname:, port:
       @socket = TCPSocket.new(hostname, port)
-      @hostname = hostname
-      @port = port
+    end
+
+    # TODO : implement fetch
+    # fetch try to get value from redis cache
+    # if no value it calls a block and set the result in cache
+    # in both cases it returns the value
+    def fetch key, &block
+      get key
+    end
+
+    private
+
+    # TODO : format result
+    def get key
+      @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
+
+      "#{@socket.gets + @socket.gets}"
+    end
+
+    def set key, value
     end
   end
 end
