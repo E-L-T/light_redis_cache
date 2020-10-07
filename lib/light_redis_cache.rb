@@ -21,11 +21,10 @@ module LightRedisCache
 
     private
 
-    # TODO : format result
     def get key
       @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
 
-      "#{@socket.gets + @socket.gets}"
+      "#{@socket.gets + @socket.gets}".gsub(/\$\d+/, "").gsub("\r\n", "")
     end
 
     def set key, value
