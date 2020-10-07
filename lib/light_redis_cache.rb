@@ -8,7 +8,12 @@ module LightRedisCache
     attr_accessor :socket
 
     def initialize hostname:, port:
-      @socket = TCPSocket.new(hostname, port)
+      @hostname = hostname
+      @port = port
+    end
+
+    def open_socket
+      @socket = TCPSocket.new(@hostname, @port)
     end
 
     # TODO : implement fetch
@@ -19,15 +24,22 @@ module LightRedisCache
       get key
     end
 
-    private
-
+    # TODO : implement exception catching
     def get key
+      open_socket
       @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
 
-      "#{@socket.gets + @socket.gets}".gsub(/\$\d+/, "").gsub("\r\n", "")
+      result = "#{@socket.gets + @socket.gets}".gsub(/\$\d+/, "").gsub("\r\n", "")
+      @socket.close
+      result
     end
 
     def set key, value
+      open_socket
+      @socket.write("*3\r\n$3\r\nSET\r\n$#{ key.length }\r\n#{ key }\r\n$#{ value.length }\r\n#{ value }\r\n")
+      result = @socket.gets
+      @socket.close
+      result
     end
   end
 end
