@@ -12,22 +12,28 @@ module LightRedisCache
       @port = port
     end
 
+    def fetch key, expires_in: 1.day, &block
+      result = get(key)
+      if result == "no value"
+        value = block.call
+        set(key, value, expires_in: expires_in)
+        value
+      else
+        result
+      end
+    end
+
+    # TODO : implement a delete_matched method with https://redis.io/commands/keys
+
+    private
+
     def open_socket
       @socket = TCPSocket.new(@hostname, @port)
     end
 
-    def fetch key, &block
-      redis_result = get key
-      if redis_result == "no value"
-        value = block.call
-        set(key, value)
-        value
-      else
-        redis_result
-      end
+    def close_socket
+      @socket.close
     end
-
-    private
 
     def get key
       open_socket
@@ -38,17 +44,16 @@ module LightRedisCache
       else
         result = JSON.parse(@socket.gets.gsub(/\$\d+/, "").gsub("\r\n", ""))
       end
-      @socket.close
+      close_socket
       result
     end
 
-    def set key, value
+    def set key, value, expires_in:
       open_socket
       value = value.to_json
       @socket.write("*3\r\n$3\r\nSET\r\n$#{ key.length }\r\n#{ key }\r\n$#{ value.length }\r\n#{ value }\r\n")
-      result = @socket.gets
-      @socket.close
-      result
+      @socket.write("*3\r\n$6\r\nEXPIRE\r\n$#{ key.length }\r\n#{ key }\r\n$#{ expires_in.seconds.to_s.length }\r\n#{ expires_in.seconds.to_i }\r\n")
+      close_socket
     end
   end
 end
