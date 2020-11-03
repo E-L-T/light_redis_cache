@@ -16,13 +16,18 @@ module LightRedisCache
       @socket = TCPSocket.new(@hostname, @port)
     end
 
-    # TODO : implement fetch
-    # fetch try to get value from redis cache
-    # if no value it calls a block and set the result in cache
-    # in both cases it returns the value
     def fetch key, &block
-      get key
+      redis_result = get key
+      if redis_result == "no value"
+        value = block.call
+        set(key, value)
+        value
+      else
+        redis_result
+      end
     end
+
+    private
 
     def get key
       open_socket
@@ -31,11 +36,10 @@ module LightRedisCache
       if first_result == "$-1\r\n"
         result = "no value"
       else
-        result = @socket.gets.gsub(/\$\d+/, "").gsub("\r\n", "")
-        parsed_result = JSON.parse(result)
+        result = JSON.parse(@socket.gets.gsub(/\$\d+/, "").gsub("\r\n", ""))
       end
       @socket.close
-      parsed_result
+      result
     end
 
     def set key, value
