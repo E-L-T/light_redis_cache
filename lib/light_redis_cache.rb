@@ -24,12 +24,15 @@ module LightRedisCache
       get key
     end
 
-    # TODO : implement exception catching
     def get key
       open_socket
       @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
-
-      result = "#{@socket.gets + @socket.gets}".gsub(/\$\d+/, "").gsub("\r\n", "")
+      first_result = @socket.gets
+      if first_result == "$-1\r\n"
+        result = "no value"
+      else
+        result = "#{first_result + @socket.gets}".gsub(/\$\d+/, "").gsub("\r\n", "")
+      end
       @socket.close
       result
     end
