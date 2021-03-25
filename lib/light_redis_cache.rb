@@ -1,8 +1,10 @@
 require "light_redis_cache/version"
 require "socket"
+require "json"
+require 'date'
+require 'local_redis_server'
 
 module LightRedisCache
-  class Error < StandardError; end
 
   class Client
     attr_accessor :socket
@@ -12,7 +14,7 @@ module LightRedisCache
       @port = port
     end
 
-    def fetch key, expires_in: 1.day, &block
+    def fetch key, expires_in: 86400, &block
       result = get(key)
       if result == "no value"
         value = block.call
@@ -23,9 +25,8 @@ module LightRedisCache
       end
     end
 
-    # TODO : implement a delete_matched method with https://redis.io/commands/keys
     def delete_matched matcher
-      #get_keys matcher
+      #get matched keys
       open_socket
       @socket.write("*2\r\n$4\r\nKEYS\r\n$#{ matcher.length }\r\n#{ matcher }\r\n")
       first_result = @socket.gets
@@ -53,16 +54,6 @@ module LightRedisCache
       close_socket
     end
 
-    private
-
-    def open_socket
-      @socket = TCPSocket.new(@hostname, @port)
-    end
-
-    def close_socket
-      @socket.close
-    end
-
     def get key
       open_socket
       @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
@@ -80,8 +71,24 @@ module LightRedisCache
       open_socket
       value = value.to_json
       @socket.write("*3\r\n$3\r\nSET\r\n$#{ key.length }\r\n#{ key }\r\n$#{ value.length }\r\n#{ value }\r\n")
-      @socket.write("*3\r\n$6\r\nEXPIRE\r\n$#{ key.length }\r\n#{ key }\r\n$#{ expires_in.seconds.to_s.length }\r\n#{ expires_in.seconds.to_i }\r\n")
+      @socket.write("*3\r\n$6\r\nEXPIRE\r\n$#{ key.length }\r\n#{ key }\r\n$#{ expires_in.to_s.length }\r\n#{ expires_in.to_i }\r\n")
       close_socket
+    end
+
+    def clear
+      open_socket
+      @socket.write("*1\r\n$8\r\nFLUSHALL\r\n")
+      close_socket
+    end
+
+    private
+
+    def open_socket
+      @socket = TCPSocket.new(@hostname, @port)
+    end
+
+    def close_socket
+      @socket.close
     end
   end
 end
