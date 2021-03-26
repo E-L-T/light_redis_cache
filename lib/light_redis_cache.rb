@@ -14,9 +14,30 @@ module LightRedisCache
       @port = port
     end
 
+    def get key
+      open_socket
+      @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
+      first_result = @socket.gets
+      if first_result == "$-1\r\n"
+        result = nil
+      else
+        result = JSON.parse(@socket.gets.gsub(/\$\d+/, "").gsub("\r\n", ""))
+      end
+      close_socket
+      result
+    end
+
+    def set key, value, expires_in:
+      open_socket
+      value = value.to_json
+      @socket.write("*3\r\n$3\r\nSET\r\n$#{ key.length }\r\n#{ key }\r\n$#{ value.length }\r\n#{ value }\r\n")
+      @socket.write("*3\r\n$6\r\nEXPIRE\r\n$#{ key.length }\r\n#{ key }\r\n$#{ expires_in.to_s.length }\r\n#{ expires_in }\r\n")
+      close_socket
+    end
+
     def fetch key, expires_in: 86400, &block
       result = get(key)
-      if result == "no value"
+      if result == nil
         value = block.call
         set(key, value, expires_in: expires_in)
         value
@@ -51,27 +72,6 @@ module LightRedisCache
         end
         @socket.write("*#{ request_length + 1 }\r\n$3\r\nDEL\r\n#{ request }")
       end
-      close_socket
-    end
-
-    def get key
-      open_socket
-      @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
-      first_result = @socket.gets
-      if first_result == "$-1\r\n"
-        result = "no value"
-      else
-        result = JSON.parse(@socket.gets.gsub(/\$\d+/, "").gsub("\r\n", ""))
-      end
-      close_socket
-      result
-    end
-
-    def set key, value, expires_in:
-      open_socket
-      value = value.to_json
-      @socket.write("*3\r\n$3\r\nSET\r\n$#{ key.length }\r\n#{ key }\r\n$#{ value.length }\r\n#{ value }\r\n")
-      @socket.write("*3\r\n$6\r\nEXPIRE\r\n$#{ key.length }\r\n#{ key }\r\n$#{ expires_in.to_s.length }\r\n#{ expires_in.to_i }\r\n")
       close_socket
     end
 
