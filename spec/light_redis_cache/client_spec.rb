@@ -1,4 +1,5 @@
-require 'date'
+require 'local_redis_server'
+
 
 RSpec.describe LightRedisCache::Client do
   # Set the hostname and the port of a local Redis server in `spec/local_redis_server.rb` to run the tests

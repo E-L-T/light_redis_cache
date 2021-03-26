@@ -1,11 +1,9 @@
-require "light_redis_cache/version"
-require "socket"
-require "json"
+require 'light_redis_cache/version'
+require 'socket'
+require 'json'
 require 'date'
-require 'local_redis_server'
 
 module LightRedisCache
-
   class Client
     attr_accessor :socket
 
@@ -16,15 +14,10 @@ module LightRedisCache
 
     def get key
       open_socket
-      @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
-      first_result = @socket.gets
-      if first_result == "$-1\r\n"
-        result = nil
-      else
-        result = JSON.parse(@socket.gets.gsub(/\$\d+/, "").gsub("\r\n", ""))
-      end
+      @socket.puts("GET #{ key }")
+      value = @socket.gets == "$-1\r\n" ? nil : JSON.parse(@socket.gets.gsub(/\$\d+/, "").gsub("\r\n", ""))
       close_socket
-      result
+      value
     end
 
     def set key, value, expires_in:
