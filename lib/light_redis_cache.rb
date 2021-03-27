@@ -42,7 +42,7 @@ module LightRedisCache
     def delete_matched matcher
       #get matched keys
       open_socket
-      @socket.write("*2\r\n$4\r\nKEYS\r\n$#{ matcher.length }\r\n#{ matcher }\r\n")
+      @socket.puts("KEYS #{ matcher }")
       first_result = @socket.gets
 
       if first_result.include?("*")
@@ -63,14 +63,14 @@ module LightRedisCache
           request.insert(-1, "$#{ key.length }\r\n#{ key }\r\n")
           request_length +=1
         end
-        @socket.write("*#{ request_length + 1 }\r\n$3\r\nDEL\r\n#{ request }")
+        @socket.puts("*#{ request_length + 1 }\r\n$3\r\nDEL\r\n#{ request }")
       end
       close_socket
     end
 
     def clear
       open_socket
-      @socket.write("*1\r\n$8\r\nFLUSHALL\r\n")
+      @socket.puts("FLUSHALL")
       close_socket
     end
 
