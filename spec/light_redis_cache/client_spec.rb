@@ -1,6 +1,5 @@
 require 'local_redis_server'
 
-
 RSpec.describe LightRedisCache::Client do
   # Set the hostname and the port of a local Redis server in `spec/local_redis_server.rb` to run the tests
   let!(:client) { LightRedisCache::Client.new(hostname: LocalRedisServer::HOSTNAME, port: LocalRedisServer::PORT) }
@@ -17,6 +16,8 @@ RSpec.describe LightRedisCache::Client do
     it 'gets the value of a key if key is found' do
       client.set('a', 'b', expires_in: 1000)
       expect(client.get('a')).to eq 'b'
+      client.set('my_hash', {"key"=> "value"}, expires_in: 1000)
+      expect(client.get('my_hash')).to eq({"key"=> "value"})
     end
 
     it 'returns nil if key is not found' do

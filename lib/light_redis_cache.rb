@@ -63,7 +63,7 @@ module LightRedisCache
           request.insert(-1, "$#{ key.length }\r\n#{ key }\r\n")
           request_length +=1
         end
-        @socket.puts("*#{ request_length + 1 }\r\n$3\r\nDEL\r\n#{ request }")
+        @socket.write("*#{ request_length + 1 }\r\n$3\r\nDEL\r\n#{ request }")
       end
       close_socket
     end
