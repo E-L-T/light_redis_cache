@@ -1,15 +1,19 @@
 require 'light_redis_cache/version'
+require 'light_redis_cache/configuration'
 require 'socket'
 require 'json'
-require 'date'
 
 module LightRedisCache
-  class Client
+
+  class << self
     attr_accessor :socket
 
-    def initialize hostname:, port:
-      @hostname = hostname
-      @port = port
+    def configure
+      yield(configuration)
+    end
+
+    def configuration
+      @configuration ||= LightRedisCache::Configuration.new
     end
 
     def get key
@@ -77,7 +81,7 @@ module LightRedisCache
     private
 
     def open_socket
-      @socket = TCPSocket.new(@hostname, @port)
+      @socket = TCPSocket.new(@configuration.hostname, @configuration.port)
     end
 
     def close_socket
