@@ -5,7 +5,7 @@ It is a very basic implementation of a Redis client.
 
 :warning: **Do not to use it in production !** :warning:
 
-The aim of this gem is to understand of Redis work and how to implement a redis client to cache data.
+The aim of this gem is to understand how Redis work and how to implement a redis client to cache data.
 It can replace `Rails.cache` to connect to Redis in a Ruby on Rails application.
 
 ## Installation
