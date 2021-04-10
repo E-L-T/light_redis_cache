@@ -30,10 +30,10 @@ $ gem install light_redis_cache
 ## Configuration
 Add this block, with the configuration of your Redis server, in your code :
 
-```
+```ruby
 LightRedisCache.configure do |config|
-  config.hostname = 'MY_HOSTNAME'
-  config.port = 'MY_PORT'
+  config.hostname = 'MY_HOSTNAME' # default: 'localhost'
+  config.port = 'MY_PORT' # default: '6379'
 end
 ```
 If you have a Rails app, it should go in `config/initializers/light_redis_cache.rb`

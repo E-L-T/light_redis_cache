@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Eric Leroy-Terquem"]
   spec.email         = ["ericleroyterquem@gmail.com"]
 
-  spec.summary       = %q{A simple redis cache}
+  spec.summary       = %q{A basic Ruby client for Redis}
   spec.homepage      = "https://github.com/E-L-T/light_redis_cache"
   spec.license       = "MIT"
 
