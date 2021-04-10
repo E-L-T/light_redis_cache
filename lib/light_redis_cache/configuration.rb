@@ -4,8 +4,8 @@ module LightRedisCache
     attr_accessor :port
 
     def initialize
-      @hostname = 'localhost'
-      @port = '6379'
+      @hostname = nil
+      @port = nil
     end
   end
 end

@@ -1,15 +1,15 @@
 require 'local_redis_server'
 
 RSpec.describe LightRedisCache do
-  # Set the hostname and the port of a local Redis server in `spec/local_redis_server.rb` to run the tests
-  # let!(:client) { LightRedisCache::Client.new(hostname: LocalRedisServer::HOSTNAME, port: LocalRedisServer::PORT) }
 
-  LightRedisCache.configure do |config|
-    config.hostname = LocalRedisServer::HOSTNAME
-    config.port = LocalRedisServer::PORT
+  before(:all) do
+    LightRedisCache.configure do |config|
+      config.hostname = LocalRedisServer::HOSTNAME
+      config.port = LocalRedisServer::PORT
+    end
   end
 
-  before(:each) { LightRedisCache.clear }
+  before { LightRedisCache.clear }
 
   describe '.set' do
     it 'sets a key and a value and return nil' do
