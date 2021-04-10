@@ -16,6 +16,11 @@ module LightRedisCache
       @configuration ||= LightRedisCache::Configuration.new
     end
 
+    # Get the value of a key
+    #
+    # @param [String] key
+    # @return [String, Integer, Array, Hash] value
+    # @see https://redis.io/commands/get GET command
     def get key
       open_socket
       @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
@@ -24,7 +29,14 @@ module LightRedisCache
       value
     end
 
-    def set key, value, expires_in:
+    # Set key to hold the value
+    #
+    # @param [String] key
+    # @param [String, Integer, Array, Hash] value
+    # @param [Integer] expires_in - default value : 86400 seconds (1 day)
+    # @return [nil]
+    # @see https://redis.io/commands/set SET command
+    def set key, value, expires_in: 86400
       open_socket
       value = value.to_json.encode("iso-8859-1").force_encoding("utf-8")
       @socket.write("*3\r\n$3\r\nSET\r\n$#{ key.length }\r\n#{ key }\r\n$#{ value.length }\r\n#{ value }\r\n")
@@ -32,6 +44,13 @@ module LightRedisCache
       close_socket
     end
 
+    # Get the value of a key. If the key does not exist,
+    # call a block, set the result and return it
+    #
+    # @param [String] key
+    # @param [Integer] expires_in - default value : 86400 seconds (1 day)
+    # @param [Proc] block
+    # @return [void]
     def fetch key, expires_in: 86400, &block
       result = get(key)
       if result == nil
@@ -43,8 +62,14 @@ module LightRedisCache
       end
     end
 
+    # Remove keys corresponding to matcher
+    #
+    # @param [String] matcher
+    # @return [void]
     def delete_matched matcher
-      #get matched keys
+      # get matched keys
+      # @see https://redis.io/commands/keys KEYS command
+
       open_socket
       @socket.puts("KEYS #{ matcher }")
       first_result = @socket.gets
@@ -60,7 +85,9 @@ module LightRedisCache
           end
         end
 
-        #delete keys
+        # delete matched keys
+        # @see https://redis.io/commands/del DEL command
+
         request = ""
         request_length = 0
         keys.each do |key|
@@ -72,6 +99,10 @@ module LightRedisCache
       close_socket
     end
 
+    # Clear database
+    #
+    # @return [void]
+    # @see https://redis.io/commands/flushall FLUSHALL command
     def clear
       open_socket
       @socket.puts("FLUSHALL")
