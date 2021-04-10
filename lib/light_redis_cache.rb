@@ -65,11 +65,27 @@ module LightRedisCache
     # Remove keys corresponding to matcher
     #
     # @param [String] matcher
-    # @return [void]
+    # @return [void, nil]
     def delete_matched matcher
-      # get matched keys
-      # @see https://redis.io/commands/keys KEYS command
+      matched_keys = get_matched_keys matcher
 
+      delete matched_keys if matched_keys
+    end
+
+    # Get keys corresponding to matcher
+    #
+    # Supported glob-style patterns:
+    #
+    # h?llo matches hello, hallo and hxllo
+    # h*llo matches hllo and heeeello
+    # h[ae]llo matches hello and hallo, but not hillo
+    # h[^e]llo matches hallo, hbllo, ... but not hello
+    # h[a-b]llo matches hallo and hbllo
+    #
+    # @param [String] matcher
+    # @return [Array<String>]
+    # @see https://redis.io/commands/keys KEYS command
+    def get_matched_keys matcher
       open_socket
       @socket.puts("KEYS #{ matcher }")
       first_result = @socket.gets
@@ -84,18 +100,25 @@ module LightRedisCache
             @socket.gets
           end
         end
-
-        # delete matched keys
-        # @see https://redis.io/commands/del DEL command
-
-        request = ""
-        request_length = 0
-        keys.each do |key|
-          request.insert(-1, "$#{ key.length }\r\n#{ key }\r\n")
-          request_length +=1
-        end
-        @socket.write("*#{ request_length + 1 }\r\n$3\r\nDEL\r\n#{ request }")
       end
+      close_socket
+      keys
+    end
+
+    # Delete keys
+    #
+    # @param [Array] keys
+    # @return [void]
+    # @see https://redis.io/commands/del DEL command
+    def delete keys
+      open_socket
+      request = ""
+      request_length = 0
+      keys.each do |key|
+        request.insert(-1, "$#{ key.length }\r\n#{ key }\r\n")
+        request_length +=1
+      end
+      @socket.write("*#{ request_length + 1 }\r\n$3\r\nDEL\r\n#{ request }")
       close_socket
     end
 

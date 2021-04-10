@@ -13,24 +13,24 @@ RSpec.describe LightRedisCache do
 
   describe '.set' do
     it 'sets a key and a value and return nil' do
-      expect(LightRedisCache.set('a', 'b', expires_in: 1000)).to eq nil
+      expect(LightRedisCache.set('a', 'b')).to eq nil
     end
   end
 
   describe '.get' do
     it 'gets the value of a key if key is found' do
-      LightRedisCache.set('a', 'b', expires_in: 1000)
+      LightRedisCache.set('a', 'b')
       expect(LightRedisCache.get('a')).to eq 'b'
 
-      LightRedisCache.set('my_hash', {"key"=> "value"}, expires_in: 1000)
+      LightRedisCache.set('my_hash', {"key"=> "value"})
       expect(LightRedisCache.get('my_hash')).to eq({"key"=> "value"})
 
-      LightRedisCache.set('my_array', [{"key"=> "value"}, {"other_key"=> "next_value"}], expires_in: 1000)
+      LightRedisCache.set('my_array', [{"key"=> "value"}, {"other_key"=> "next_value"}])
       expect(LightRedisCache.get('my_array')).to eq([{"key"=> "value"}, {"other_key"=> "next_value"}])
     end
 
     it 'works event with special characters' do
-      LightRedisCache.set('saison', 'été', expires_in: 1000)
+      LightRedisCache.set('saison', 'été')
       expect(LightRedisCache.get('saison')).to eq 'été'
     end
 
@@ -61,9 +61,9 @@ RSpec.describe LightRedisCache do
 
   describe '.delete_matched' do
     it 'deletes the matched keys' do
-      LightRedisCache.set('chblai36', '11', expires_in: 1000)
-      LightRedisCache.set('chblai52', '22', expires_in: 1000)
-      LightRedisCache.set('argh28', '33', expires_in: 1000)
+      LightRedisCache.set('chblai36', '11')
+      LightRedisCache.set('chblai52', '22')
+      LightRedisCache.set('argh28', '33')
 
       LightRedisCache.delete_matched('*chblai*')
 
@@ -75,8 +75,8 @@ RSpec.describe LightRedisCache do
 
   describe '.clear' do
     it 'flushes all database' do
-      LightRedisCache.set('a', 'b', expires_in: 1000)
-      LightRedisCache.set('c', 'd', expires_in: 1000)
+      LightRedisCache.set('a', 'b')
+      LightRedisCache.set('c', 'd')
 
       expect(LightRedisCache.get('a')).to eq 'b'
       expect(LightRedisCache.get('c')).to eq 'd'
