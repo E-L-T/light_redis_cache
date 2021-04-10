@@ -21,8 +21,17 @@ RSpec.describe LightRedisCache do
     it 'gets the value of a key if key is found' do
       LightRedisCache.set('a', 'b', expires_in: 1000)
       expect(LightRedisCache.get('a')).to eq 'b'
+
       LightRedisCache.set('my_hash', {"key"=> "value"}, expires_in: 1000)
       expect(LightRedisCache.get('my_hash')).to eq({"key"=> "value"})
+
+      LightRedisCache.set('my_array', [{"key"=> "value"}, {"other_key"=> "next_value"}], expires_in: 1000)
+      expect(LightRedisCache.get('my_array')).to eq([{"key"=> "value"}, {"other_key"=> "next_value"}])
+    end
+
+    it 'works event with special characters' do
+      LightRedisCache.set('saison', 'été', expires_in: 1000)
+      expect(LightRedisCache.get('saison')).to eq 'été'
     end
 
     it 'returns nil if key is not found' do
@@ -55,7 +64,9 @@ RSpec.describe LightRedisCache do
       LightRedisCache.set('chblai36', '11', expires_in: 1000)
       LightRedisCache.set('chblai52', '22', expires_in: 1000)
       LightRedisCache.set('argh28', '33', expires_in: 1000)
+
       LightRedisCache.delete_matched('*chblai*')
+
       expect(LightRedisCache.get('chblai36')).to eq nil
       expect(LightRedisCache.get('chblai52')).to eq nil
       expect(LightRedisCache.get('argh28')).to eq '33'
@@ -66,9 +77,12 @@ RSpec.describe LightRedisCache do
     it 'flushes all database' do
       LightRedisCache.set('a', 'b', expires_in: 1000)
       LightRedisCache.set('c', 'd', expires_in: 1000)
+
       expect(LightRedisCache.get('a')).to eq 'b'
       expect(LightRedisCache.get('c')).to eq 'd'
+
       LightRedisCache.clear
+
       expect(LightRedisCache.get('a')).to eq nil
       expect(LightRedisCache.get('c')).to eq nil
     end

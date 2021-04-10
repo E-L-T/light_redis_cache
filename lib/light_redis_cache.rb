@@ -18,15 +18,15 @@ module LightRedisCache
 
     def get key
       open_socket
-      @socket.puts("GET #{ key }")
-      value = @socket.gets == "$-1\r\n" ? nil : JSON.parse(@socket.gets.gsub(/\$\d+/, "").gsub("\r\n", ""))
+      @socket.write("*2\r\n$3\r\nGET\r\n$#{ key.length }\r\n#{ key }\r\n")
+      value = @socket.gets == "$-1\r\n" ? nil : JSON.parse((@socket.gets).gsub("\r\n", "").force_encoding("iso-8859-1").encode!("utf-8"))
       close_socket
       value
     end
 
     def set key, value, expires_in:
       open_socket
-      value = value.to_json
+      value = value.to_json.encode("iso-8859-1").force_encoding("utf-8")
       @socket.write("*3\r\n$3\r\nSET\r\n$#{ key.length }\r\n#{ key }\r\n$#{ value.length }\r\n#{ value }\r\n")
       @socket.write("*3\r\n$6\r\nEXPIRE\r\n$#{ key.length }\r\n#{ key }\r\n$#{ expires_in.to_s.length }\r\n#{ expires_in }\r\n")
       close_socket
