@@ -3,7 +3,7 @@
 
 This gem is a very basic implementation of a Ruby client for Redis.
 
-It is not supposed to be used in production, the aim of this gem is to understand of Redis work and how to implement a Redis client to cache data.
+It is not supposed to be used in production, the aim of this gem is to understand how Redis work and how to implement a Redis client to cache data.
 
 It creates a TCP socket between your app and your Redis server. A few methods let you communicate with your Redis server using a protocol called RESP (REdis Serialization Protocol). See https://redis.io/topics/protocol
 
